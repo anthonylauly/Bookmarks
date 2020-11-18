@@ -1,0 +1,97 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+    <html>
+        <head>
+            <title>{% block title %}{% endblock %}</title>
+            <link rel="stylesheet" href="{% static 'css/base.css' %}">
+        </head>
+        <body>
+            <div id='header'>
+                <span class='logo'>Bookmarks</span>
+                {% if request.user.is_authenticated %}
+                    <ul class='menu'>
+                        <li {% if section == "dasboard"%}class='selected'{% endif %}>
+                            <a href="{% url 'dashboard' %}">My dashboard</a>
+                        </li>
+                        <li {% if section == 'images'%}class='selected'{% endif %}>
+                            <a href="#">Images</a>
+                        </li>
+                        <li {% if section == "people"%}class='selected'{% endif %}>
+                            <a href="{% url 'user_list' %}">People</a>
+                        </li>
+                    </ul>
+                {% endif %}
+                
+                <span class='user'>
+                    {% if request.user.is_authenticated %}
+                        Hello {{ request.user.first_name }}
+                        <a href="{% url 'logout' %}">Logout</a>
+                    {% else %}
+                        <a href="{% url 'login' %}">Log-in</a>
+                    {% endif %}
+                </span>
+            </div>
+
+            {% if messages %}
+                <ul class='messages'>
+                    {% for message in messages %}
+                        <li class='{{ message.tags }}'>
+                            {{ message|safe }}
+                                <a href="#" class='close'>x</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+
+            {% endif %}
+
+            <div id='content'>
+                {% block content %} 
+                {% endblock %}
+            </div>
+
+            <script src='https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js'></script>
+            <script src='https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js'></script>
+            <script>
+                var csrftoken = Cookies.get('csrftoken');
+                function csrfSafeMethod(method){
+                    //these HTTP methods do not require CSRF protection
+                    return(/^(GET|HEAD\OPTIONS\TRACE)$/.test(method));
+                }
+                $.ajaxSetup({
+                    beforeSend: function(xhr, settings){
+                        if (!csrfSafeMethod(settings.type) && !this.crossDomain){
+                            xhr.setRequestHeader('x-CSRFToken', csrftoken);
+                        }
+                    }
+                });
+                $(document).ready(function(){
+                    {% block domready %}
+                    $('a.like').click(function(e){
+                        e.preventDefault();
+                        $.post('{% url 'images:like' %}',
+                            {
+                                id: $(this).data('id'),
+                                action: $(this).data('action')
+                            },
+                            function(data){
+                                if (data['status'] == 'ok'){
+                                    var previous_action = $('a.like').data('action');
+
+                                    //toogle data-action
+                                    $('a.like').data('action', previous_action == 'like' ?
+                                    'unlike':'like');
+                                    // toogle link text
+                                    $('a.like').text(previous_action == 'like' ? 'unlike':'Like');
+
+                                    //update total likes
+                                    var previous_action = parseInt($('span.count .total').text());
+                                    $('span.count .total').text(previous_action == 'like' ?
+                                    previous_likes + 1 : previous_likes - 1);
+                                }
+                            });
+                    });
+                    {% endblock %}
+                });
+            </script>
+        </body>
+    </html>
