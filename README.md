@@ -1,8 +1,7 @@
 # Bookmarks
 Save shortcuts to your favorite webpages and navigate to them in seconds from anywhere.
 
-Method Implemented:
-1. Create models, views, templates, and url for blog app, configure Django admin site.
-2. Handle forms and model forms, send emails with Django.Create comment system, use tagging functionality.
-3. Implement search engine, use Postgres SQL database.
-
+Method Implemented:  
+1. Apply Django authentication, extend user model, adding social authentication  
+2. Create image bookmarking, create bookmarklet with JQuery, implement AJAX functionality, create custom decorator  
+3. Build follower system, use contenttypes framework, use Django signal, store items in Redis
